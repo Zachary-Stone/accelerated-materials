@@ -30,17 +30,11 @@ dist/
 !.env.example
 .vscode/
 .idea/
-AGENTS.md
 
-# Downloaded climate data and generated outputs
-data/*
-!data/.gitkeep
-data-tutorial/
-NZ_domain/
-*.nc
-*.zip
-models/
-code_carbon/
+# Generated UMA tutorial artifacts
+outputs/
+ccai_uma_catalysis_results/
+vib.*.traj
 
 # OS files
 .DS_Store
