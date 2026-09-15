@@ -3,7 +3,7 @@
 
 def main() -> None:
     """Report that the executable workflow runner is not yet implemented."""
-    print("UMA catalysis package scaffold is complete; workflows are not yet available.")
+    print("UMA catalysis package scaffold is complete; workflows are unavailable.")
 
 
 if __name__ == "__main__":
