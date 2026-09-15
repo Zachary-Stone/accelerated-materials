@@ -1,0 +1,43 @@
+[project]
+name = "uma-catalysis-tutorial"
+version = "0.1.0"
+description = "UMA-based catalyst-screening workflows for the CCAI catalysis tutorial."
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "ase",
+    "codecarbon",
+    "fairchem-applications-cattsunami",
+    "fairchem-core[docs]",
+    "fairchem-data-oc",
+    "huggingface-hub",
+    "matplotlib",
+    "numpy",
+    "pymatgen",
+    "torch",
+    "torch-dftd",
+    "x3dase",
+]
+
+[tool.poetry]
+package-mode = true
+packages = [
+    { include = "uma_catalysis", from = "src" },
+]
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.12.0"
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
