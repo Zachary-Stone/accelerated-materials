@@ -1,0 +1,35 @@
+[run]
+workflows = ["bulk"]
+output_directory = "outputs"
+show_figures = false
+
+[model]
+model_name = "uma-s-1p2"
+d3_device = "cpu"
+d3_damping = "bj"
+
+[compute]
+random_seed = 42
+fast_mode = false
+relaxation_force_threshold = 0.05
+relaxation_steps = 300
+adsorption_candidate_count = 5
+calculate_zpe = true
+neb_force_threshold = 0.1
+neb_steps = 300
+neb_intermediate_images = 10
+
+[material]
+element = "Ni"
+crystal_structure = "fcc"
+initial_lattice_constant = 3.52
+experimental_lattice_constant = 3.524
+surface_facets = [[1, 1, 1], [1, 0, 0], [1, 1, 0], [2, 1, 1]]
+surface_thicknesses = [4, 6, 8]
+adsorption_facet = [1, 1, 1]
+vacuum_size = 10.0
+
+[tracking]
+enabled = false
+project_name = "ccai-uma-catalysis-tutorial"
+output_file = "emissions.csv"
