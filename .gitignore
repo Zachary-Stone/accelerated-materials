@@ -23,6 +23,7 @@ dist/
 
 # Jupyter
 .ipynb_checkpoints/
+*.ipynb
 
 # Local configuration and editor files
 .env
