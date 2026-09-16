@@ -40,6 +40,21 @@ The notebook's dependencies include FAIR Chemistry, ASE, PyTorch, pymatgen,
 and CodeCarbon. Installing and running the full scientific workflows can
 require substantial compute and model-download time.
 
+## Configuration
+
+[experiment.toml](experiment.toml) is the user-facing configuration for the
+future workflow runner. It defines:
+
+- `run`: selected workflows, output directory, and figure display;
+- `model`: UMA and D3 calculator settings;
+- `compute`: seed, optimization limits, candidate count, ZPE, and NEB budget;
+- `material`: the Ni bulk and surface system; and
+- `tracking`: opt-in CodeCarbon settings.
+
+The supplied configuration selects only the bulk workflow. Execution is not
+implemented yet; scientific workflows will be added in later refactoring
+steps.
+
 ## Development checks
 
 ```bash
