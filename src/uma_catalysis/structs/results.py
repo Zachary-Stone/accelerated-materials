@@ -371,10 +371,20 @@ class CoveragePoint:
         Adsorbate coverage in monolayers.
     adsorption_energy_per_adsorbate : float
         Average adsorption energy in eV per adsorbate.
+    hydrogen_count : int, optional
+        Number of H adsorbates in this coverage configuration. Default is 1.
+    candidate_energies : tuple[EnergyComponents, ...], optional
+        Relaxed energy components of generated configurations. Default is an
+        empty tuple when per-candidate provenance is unavailable.
+    best_structure_path : pathlib.Path or None, optional
+        Saved lowest-energy structure for this coverage. Default is None.
     """
 
     coverage: float
     adsorption_energy_per_adsorbate: float
+    hydrogen_count: int = 1
+    candidate_energies: tuple[EnergyComponents, ...] = ()
+    best_structure_path: Path | None = None
 
     def __post_init__(self) -> None:
         """Validate coverage-study data."""
@@ -384,6 +394,8 @@ class CoveragePoint:
         )
         if self.coverage <= 0:
             raise ValueError("coverage must be positive.")
+        if self.hydrogen_count < 1:
+            raise ValueError("hydrogen_count must be at least 1.")
 
 
 @dataclass(frozen=True, slots=True)
@@ -399,11 +411,20 @@ class CoverageResult:
         Extrapolated zero-coverage adsorption energy in eV.
     interaction_parameter : float
         Linear coverage coefficient in eV per monolayer.
+    clean_slab_path : pathlib.Path or None, optional
+        Saved relaxed clean-slab reference structure. Default is None.
+    hydrogen_reference_path : pathlib.Path or None, optional
+        Saved relaxed H2 reference structure. Default is None.
+    figure_path : pathlib.Path or None, optional
+        Saved coverage-dependence figure. Default is None.
     """
 
     points: tuple[CoveragePoint, ...]
     intercept: float
     interaction_parameter: float
+    clean_slab_path: Path | None = None
+    hydrogen_reference_path: Path | None = None
+    figure_path: Path | None = None
 
     def __post_init__(self) -> None:
         """Validate the fit inputs and outputs."""
@@ -411,6 +432,9 @@ class CoverageResult:
             raise ValueError("points must contain at least two coverage values.")
         _validate_finite(self.intercept, "intercept")
         _validate_finite(self.interaction_parameter, "interaction_parameter")
+        coverages = tuple(point.coverage for point in self.points)
+        if len(set(coverages)) != len(coverages):
+            raise ValueError("points must contain distinct coverage values.")
 
 
 @dataclass(frozen=True, slots=True)

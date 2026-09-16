@@ -20,6 +20,7 @@ from uma_catalysis.calculations.relaxation import (
     calculate_vibrational_zpe,
     relax_cell_and_positions,
     relax_positions,
+    relax_with_uma,
 )
 from uma_catalysis.calculations.structures import (
     build_adsorption_slab,
@@ -51,5 +52,6 @@ __all__ = [
     "reaction_energy",
     "relax_cell_and_positions",
     "relax_positions",
+    "relax_with_uma",
     "surface_energy_from_intercept",
 ]

@@ -8,11 +8,10 @@ from uma_catalysis.calculations import (
     build_adsorption_slab,
     build_d3_calculator,
     build_diatomic_reference,
-    build_uma_calculator,
     calculate_vibrational_zpe,
     evaluate_energy_components,
     generate_single_adsorbate_candidates,
-    relax_positions,
+    relax_with_uma,
 )
 from uma_catalysis.evaluation import plot_adsorption_structure
 from uma_catalysis.structs.config import ComputeConfig, MaterialConfig, ModelConfig
@@ -29,24 +28,6 @@ PART_DIRECTORY = Path("part4-h-adsorption")
 def _adsorbate_indices(atoms: Any) -> list[int]:
     """Return FAIR Chemistry adsorbate atom indices identified by tag 2."""
     return [index for index, tag in enumerate(atoms.get_tags()) if tag == 2]
-
-
-def _relax_with_oc20(
-    atoms: Any,
-    predictor: Any,
-    compute: ComputeConfig,
-    trajectory_path: Path,
-    logfile_path: Path,
-) -> Any:
-    """Assign the OC20 calculator and relax one adsorption-system structure."""
-    atoms.calc = build_uma_calculator(predictor, task_name="oc20")
-    return relax_positions(
-        atoms,
-        force_threshold=compute.relaxation_force_threshold,
-        steps=compute.relaxation_steps,
-        trajectory_path=trajectory_path,
-        logfile_path=logfile_path,
-    )
 
 
 def _hydrogen_zpe_correction(
@@ -111,10 +92,12 @@ def run_hydrogen_adsorption(
         material,
         lattice_constant=bulk_result.optimized_lattice_constant,
     )
-    clean_outcome = _relax_with_oc20(
+    clean_outcome = relax_with_uma(
         adsorption_slab.atoms.copy(),
         predictor,
-        compute,
+        task_name="oc20",
+        force_threshold=compute.relaxation_force_threshold,
+        steps=compute.relaxation_steps,
         trajectory_path=part_directory / "ni111_clean.traj",
         logfile_path=part_directory / "ni111_clean.log",
     )
@@ -138,10 +121,12 @@ def run_hydrogen_adsorption(
     for candidate_number, candidate in enumerate(candidates, start=1):
         candidate.set_pbc([True, True, True])
         artifact_stem = f"h_site_{candidate_number}"
-        outcome = _relax_with_oc20(
-            candidate,
+        outcome = relax_with_uma(
+            candidate.copy(),
             predictor,
-            compute,
+            task_name="oc20",
+            force_threshold=compute.relaxation_force_threshold,
+            steps=compute.relaxation_steps,
             trajectory_path=part_directory / f"{artifact_stem}.traj",
             logfile_path=part_directory / f"{artifact_stem}.log",
         )
@@ -166,10 +151,12 @@ def run_hydrogen_adsorption(
         bond_length=0.74,
         vacuum_size=material.vacuum_size,
     )
-    h2_outcome = _relax_with_oc20(
+    h2_outcome = relax_with_uma(
         h2,
         predictor,
-        compute,
+        task_name="oc20",
+        force_threshold=compute.relaxation_force_threshold,
+        steps=compute.relaxation_steps,
         trajectory_path=part_directory / "h2.traj",
         logfile_path=part_directory / "h2.log",
     )

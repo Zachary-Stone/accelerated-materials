@@ -88,6 +88,28 @@ def relax_positions(
     return RelaxationOutcome(atoms=atoms, converged=converged, steps=completed_steps)
 
 
+def relax_with_uma(
+    atoms: Any,
+    predictor: Any,
+    task_name: str,
+    force_threshold: float,
+    steps: int,
+    trajectory_path: Path | None = None,
+    logfile_path: Path | None = None,
+) -> RelaxationOutcome:
+    """Assign a UMA task calculator and relax atom positions with ASE LBFGS."""
+    from uma_catalysis.calculations.calculators import build_uma_calculator
+
+    atoms.calc = build_uma_calculator(predictor, task_name=task_name)
+    return relax_positions(
+        atoms,
+        force_threshold=force_threshold,
+        steps=steps,
+        trajectory_path=trajectory_path,
+        logfile_path=logfile_path,
+    )
+
+
 def relax_cell_and_positions(
     atoms: Any,
     force_threshold: float,

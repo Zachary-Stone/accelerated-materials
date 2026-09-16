@@ -6,6 +6,8 @@ from pathlib import Path
 from uma_catalysis.structs import (
     AdsorptionResult,
     BulkOptimizationResult,
+    CoveragePoint,
+    CoverageResult,
     EnergyComponents,
     HydrogenAdsorptionResult,
     ReactionResult,
@@ -94,4 +96,15 @@ class ResultStructureTests(unittest.TestCase):
                 clean_slab_path=Path("clean.xyz"),
                 hydrogen_reference_path=Path("h2.xyz"),
                 visualization_path=Path("h.png"),
+            )
+
+    def test_coverage_result_requires_distinct_coverages(self) -> None:
+        """Reject a linear fit that repeats one coverage point."""
+        point = CoveragePoint(coverage=0.25, adsorption_energy_per_adsorbate=-1.0)
+
+        with self.assertRaises(ValueError):
+            CoverageResult(
+                points=(point, point),
+                intercept=-1.0,
+                interaction_parameter=0.5,
             )

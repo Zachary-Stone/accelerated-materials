@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from math import ceil
 from typing import Any
 
-from uma_catalysis.structs.results import SurfaceEnergyResult
+from uma_catalysis.structs.results import CoveragePoint, SurfaceEnergyResult
 
 
 def plot_wulff_shape(wulff_shape: Any, element: str) -> Any:
@@ -69,6 +69,55 @@ def plot_adsorption_structure(atoms: Any, title: str) -> Any:
     plot_atoms(atoms, axis, rotation="-45x,0y,0z")
     axis.set_title(title)
     axis.set_axis_off()
+    figure.tight_layout()
+    return figure
+
+
+def plot_coverage_dependence(
+    points: Sequence[CoveragePoint], intercept: float, interaction_parameter: float
+) -> Any:
+    """
+    Plot coverage-resolved adsorption energies and their linear fit.
+
+    Parameters
+    ----------
+    points : collections.abc.Sequence[CoveragePoint]
+        Calculated coverages and average adsorption energies.
+    intercept : float
+        Extrapolated zero-coverage adsorption energy in eV.
+    interaction_parameter : float
+        Linear coverage coefficient in eV per monolayer.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        Coverage-dependence figure ready to save or display.
+
+    Raises
+    ------
+    ValueError
+        If fewer than two calculated coverage points are provided.
+    """
+    if len(points) < 2:
+        raise ValueError("points must contain at least two coverage values.")
+
+    import matplotlib.pyplot as plt
+
+    coverages = [point.coverage for point in points]
+    energies = [point.adsorption_energy_per_adsorbate for point in points]
+    maximum_coverage = max(coverages)
+    fit_coverages = [maximum_coverage * index / 99 for index in range(100)]
+    fit_energies = [
+        intercept + interaction_parameter * coverage for coverage in fit_coverages
+    ]
+    figure, axis = plt.subplots(figsize=(8, 6))
+    axis.scatter(coverages, energies, s=100, label="Calculated")
+    axis.plot(fit_coverages, fit_energies, "--", label="Linear fit")
+    axis.set_xlabel("H coverage (ML)")
+    axis.set_ylabel("Adsorption energy (eV/H)")
+    axis.set_title("Coverage-dependent H adsorption on Ni(111)")
+    axis.legend()
+    axis.grid(True, alpha=0.3)
     figure.tight_layout()
     return figure
 
