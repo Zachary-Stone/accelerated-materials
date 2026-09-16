@@ -122,6 +122,45 @@ def plot_coverage_dependence(
     return figure
 
 
+def plot_neb_path(relative_energies: Sequence[float]) -> Any:
+    """Plot a relative-energy profile for an optimized NEB path."""
+    if len(relative_energies) < 3:
+        raise ValueError("relative_energies must contain at least three images.")
+
+    import matplotlib.pyplot as plt
+
+    image_numbers = range(len(relative_energies))
+    transition_state_index = max(
+        range(len(relative_energies)), key=lambda index: relative_energies[index]
+    )
+    barrier = relative_energies[transition_state_index]
+    figure, axis = plt.subplots(figsize=(10, 6))
+    axis.plot(image_numbers, relative_energies, "o-", linewidth=2, markersize=8)
+    axis.axhline(0.0, linestyle="--", alpha=0.5, label="Initial state")
+    axis.axhline(relative_energies[-1], linestyle="--", alpha=0.5, label="Final state")
+    axis.axhline(
+        barrier,
+        linestyle=":",
+        alpha=0.7,
+        linewidth=2,
+        label=f"Forward barrier = {barrier:.2f} eV",
+    )
+    axis.annotate(
+        f"TS\n{barrier:.2f} eV",
+        xy=(transition_state_index, barrier),
+        xytext=(transition_state_index, barrier + 0.3),
+        ha="center",
+        arrowprops={"arrowstyle": "->", "lw": 1.5},
+    )
+    axis.set_xlabel("Image number")
+    axis.set_ylabel("Relative energy (eV)")
+    axis.set_title("CO Formation on Ni(111): C* + O* → CO*")
+    axis.legend(loc="upper left")
+    axis.grid(True, alpha=0.3)
+    figure.tight_layout()
+    return figure
+
+
 def plot_surface_energy_fits(
     results: Sequence[SurfaceEnergyResult], element: str
 ) -> Any:

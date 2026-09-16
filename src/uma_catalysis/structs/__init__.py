@@ -12,6 +12,7 @@ from uma_catalysis.structs.config import (
 from uma_catalysis.structs.results import (
     AdsorptionResult,
     BulkOptimizationResult,
+    COReactionStudyResult,
     CoveragePoint,
     CoverageResult,
     EnergyComponents,
@@ -25,6 +26,7 @@ from uma_catalysis.structs.results import (
 __all__ = [
     "AdsorptionResult",
     "BulkOptimizationResult",
+    "COReactionStudyResult",
     "ComputeConfig",
     "CoveragePoint",
     "CoverageResult",

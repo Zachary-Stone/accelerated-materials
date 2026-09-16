@@ -505,3 +505,20 @@ class ReactionResult:
             Electronic reaction energy plus the supplied ZPE correction.
         """
         return self.electronic_reaction_energy + (self.zero_point_correction or 0.0)
+
+
+@dataclass(frozen=True, slots=True)
+class COReactionStudyResult:
+    """Store thermochemistry and artifacts from the tutorial's CO workflow."""
+
+    reaction: ReactionResult
+    co_adsorption: AdsorptionResult
+    clean_slab_energy: EnergyComponents
+    separate_carbon_energy: EnergyComponents
+    separate_oxygen_energy: EnergyComponents
+    co_structure_path: Path
+    c_o_structure_path: Path
+    carbon_structure_path: Path
+    oxygen_structure_path: Path
+    co_gas_path: Path
+    neb_figure_path: Path | None = None

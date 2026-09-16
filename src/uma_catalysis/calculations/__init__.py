@@ -15,6 +15,11 @@ from uma_catalysis.calculations.energies import (
     reaction_energy,
     surface_energy_from_intercept,
 )
+from uma_catalysis.calculations.reaction_paths import (
+    NEBOutcome,
+    prepare_stretched_co_guess,
+    run_dyneb,
+)
 from uma_catalysis.calculations.relaxation import (
     RelaxationOutcome,
     calculate_vibrational_zpe,
@@ -33,6 +38,7 @@ from uma_catalysis.calculations.structures import (
 
 __all__ = [
     "EV_PER_ANGSTROM_SQUARED_TO_J_PER_M2",
+    "NEBOutcome",
     "RelaxationOutcome",
     "VALID_UMA_TASKS",
     "adsorption_energy",
@@ -53,5 +59,7 @@ __all__ = [
     "relax_cell_and_positions",
     "relax_positions",
     "relax_with_uma",
+    "prepare_stretched_co_guess",
+    "run_dyneb",
     "surface_energy_from_intercept",
 ]

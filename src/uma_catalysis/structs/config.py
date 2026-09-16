@@ -120,6 +120,9 @@ class ComputeConfig:
     calculate_zpe : bool, optional
         Whether workflows should calculate zero-point-energy corrections.
         Default is True.
+    run_neb : bool, optional
+        Whether the CO-reaction workflow should run its expensive NEB branch.
+        Default is False.
     neb_force_threshold : float, optional
         Maximum force in eV/angstrom for NEB optimization. Default is 0.1.
     neb_steps : int, optional
@@ -134,6 +137,7 @@ class ComputeConfig:
     relaxation_steps: int = 300
     adsorption_candidate_count: int = 5
     calculate_zpe: bool = True
+    run_neb: bool = False
     neb_force_threshold: float = 0.1
     neb_steps: int = 300
     neb_intermediate_images: int = 10

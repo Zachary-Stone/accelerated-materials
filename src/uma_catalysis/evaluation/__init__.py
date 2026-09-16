@@ -3,6 +3,7 @@
 from uma_catalysis.evaluation.plotting import (
     plot_adsorption_structure,
     plot_coverage_dependence,
+    plot_neb_path,
     plot_surface_energy_fits,
     plot_wulff_shape,
 )
@@ -10,6 +11,7 @@ from uma_catalysis.evaluation.plotting import (
 __all__ = [
     "plot_adsorption_structure",
     "plot_coverage_dependence",
+    "plot_neb_path",
     "plot_surface_energy_fits",
     "plot_wulff_shape",
 ]

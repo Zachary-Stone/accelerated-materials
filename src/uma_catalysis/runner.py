@@ -148,6 +148,7 @@ def load_experiment_config(path: Path) -> ExperimentConfig:
             calculate_zpe=_boolean(
                 compute.get("calculate_zpe"), "compute.calculate_zpe"
             ),
+            run_neb=_boolean(compute.get("run_neb"), "compute.run_neb"),
             neb_force_threshold=_number(
                 compute.get("neb_force_threshold"), "compute.neb_force_threshold"
             ),
