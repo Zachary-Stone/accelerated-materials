@@ -8,7 +8,7 @@ dependencies = [
     "ase",
     "codecarbon",
     "fairchem-applications-cattsunami",
-    "fairchem-core[docs]",
+    "fairchem-core>=2.22,<2.23",
     "fairchem-data-oc",
     "huggingface-hub",
     "matplotlib",
