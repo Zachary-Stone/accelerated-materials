@@ -20,6 +20,7 @@ class ConfigurationTests(unittest.TestCase):
         self.assertEqual(compute.random_seed, 42)
         self.assertFalse(compute.fast_mode)
         self.assertEqual(compute.relaxation_steps, 300)
+        self.assertFalse(compute.run_neb)
         self.assertEqual(compute.neb_intermediate_images, 10)
         self.assertEqual(material.element, "Ni")
         self.assertEqual(material.surface_thicknesses, (4, 6, 8))
@@ -48,4 +49,5 @@ class ConfigurationTests(unittest.TestCase):
         self.assertEqual(config.run.output_directory, PROJECT_ROOT / "outputs")
         self.assertEqual(config.model.model_name, "uma-s-1p2")
         self.assertEqual(config.compute.adsorption_candidate_count, 5)
+        self.assertFalse(config.compute.run_neb)
         self.assertFalse(config.tracking.enabled)

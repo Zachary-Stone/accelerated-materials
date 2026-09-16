@@ -1,10 +1,13 @@
-"""Load TOML experiment settings for UMA catalysis workflows."""
+"""Load, resolve, execute, and summarize UMA catalysis experiments."""
 
 import tomllib
 from collections.abc import Mapping
+from dataclasses import dataclass, fields, is_dataclass
 from pathlib import Path
 from typing import Any
 
+from uma_catalysis.artifacts import ArtifactStore
+from uma_catalysis.calculations import load_predictor
 from uma_catalysis.structs.config import (
     ComputeConfig,
     ExperimentConfig,
@@ -14,6 +17,35 @@ from uma_catalysis.structs.config import (
     RunConfig,
     TrackingConfig,
 )
+from uma_catalysis.tracking import track_emissions
+from uma_catalysis.workflows import (
+    run_bulk_optimization,
+    run_co_reaction_study,
+    run_coverage_study,
+    run_hydrogen_adsorption,
+    run_surface_energy_study,
+    run_wulff_construction,
+)
+
+WORKFLOW_DEPENDENCIES: Mapping[str, tuple[str, ...]] = {
+    "bulk": (),
+    "surface_energies": ("bulk",),
+    "wulff": ("surface_energies",),
+    "h_adsorption": ("bulk",),
+    "coverage": ("bulk",),
+    "co_reaction": ("bulk",),
+}
+
+
+@dataclass(frozen=True, slots=True)
+class ExperimentRun:
+    """Store results and top-level artifacts from one executed experiment."""
+
+    requested_workflows: tuple[str, ...]
+    executed_workflows: tuple[str, ...]
+    results: Mapping[str, Any]
+    summary_path: Path
+    emissions_path: Path | None = None
 
 
 def _section(data: Mapping[str, Any], name: str) -> Mapping[str, Any]:
@@ -187,4 +219,170 @@ def load_experiment_config(path: Path) -> ExperimentConfig:
             project_name=_string(tracking.get("project_name"), "tracking.project_name"),
             output_file=_string(tracking.get("output_file"), "tracking.output_file"),
         ),
+    )
+
+
+def resolve_workflows(requested_workflows: tuple[str, ...]) -> tuple[str, ...]:
+    """Return requested workflows with all prerequisites in execution order."""
+    resolved: list[str] = []
+    visiting: set[str] = set()
+
+    def visit(workflow: str) -> None:
+        if workflow in resolved:
+            return
+        if workflow in visiting:
+            raise ValueError(f"Workflow dependency cycle includes {workflow!r}.")
+        try:
+            dependencies = WORKFLOW_DEPENDENCIES[workflow]
+        except KeyError as error:
+            raise ValueError(f"Unknown workflow dependency: {workflow!r}.") from error
+        visiting.add(workflow)
+        for dependency in dependencies:
+            visit(dependency)
+        visiting.remove(workflow)
+        resolved.append(workflow)
+
+    for requested_workflow in requested_workflows:
+        visit(requested_workflow)
+    return tuple(resolved)
+
+
+def _seed_generators(seed: int) -> None:
+    """Set random seeds at the experiment boundary for reproducible sampling."""
+    import random
+
+    import numpy as np
+
+    random.seed(seed)
+    np.random.seed(seed)
+
+
+def _serialize(value: Any) -> Any:
+    """Convert typed result data to JSON-compatible values without ASE objects."""
+    if value is None or isinstance(value, str | int | float | bool):
+        return value
+    if isinstance(value, Path):
+        return str(value)
+    if isinstance(value, Mapping):
+        return {str(key): _serialize(item) for key, item in value.items()}
+    if isinstance(value, tuple | list):
+        return [_serialize(item) for item in value]
+    if is_dataclass(value):
+        return {
+            field.name: _serialize(getattr(value, field.name))
+            for field in fields(value)
+            if not field.name.endswith("_atoms")
+        }
+    raise TypeError(f"Cannot serialize result value of type {type(value).__name__}.")
+
+
+def _show_result_figures(results: Mapping[str, Any]) -> None:
+    """Display saved workflow figures when interactive presentation is requested."""
+    figure_paths = []
+    for result in results.values():
+        for attribute in ("figure_path", "visualization_path", "neb_figure_path"):
+            path = getattr(result, attribute, None)
+            if isinstance(path, Path) and path.is_file():
+                figure_paths.append(path)
+    if not figure_paths:
+        return
+
+    import matplotlib.pyplot as plt
+
+    for path in figure_paths:
+        figure, axis = plt.subplots()
+        axis.imshow(plt.imread(path))
+        axis.set_axis_off()
+        axis.set_title(path.stem)
+    plt.show()
+
+
+def run_experiment(config: ExperimentConfig) -> ExperimentRun:
+    """
+    Execute configured workflows once their typed prerequisites are available.
+
+    UMA is loaded once, inside the optional emissions-tracking boundary, and
+    shared by every selected workflow. A JSON summary is written beneath the
+    configured output root after all stages have completed.
+    """
+    requested_workflows = config.run.workflows
+    executed_workflows = resolve_workflows(requested_workflows)
+    artifacts = ArtifactStore(config.run.output_directory)
+    _seed_generators(config.compute.random_seed)
+    results: dict[str, Any] = {}
+
+    with track_emissions(config.tracking, artifacts) as emissions_path:
+        predictor = load_predictor(config.model)
+        for workflow in executed_workflows:
+            if workflow == "bulk":
+                results[workflow] = run_bulk_optimization(
+                    predictor,
+                    config.material,
+                    config.compute,
+                    artifacts,
+                )
+            elif workflow == "surface_energies":
+                results[workflow] = run_surface_energy_study(
+                    predictor,
+                    results["bulk"],
+                    config.material,
+                    config.compute,
+                    artifacts,
+                )
+            elif workflow == "wulff":
+                results[workflow] = run_wulff_construction(
+                    results["bulk"],
+                    results["surface_energies"],
+                    config.material,
+                    artifacts,
+                )
+            elif workflow == "h_adsorption":
+                results[workflow] = run_hydrogen_adsorption(
+                    predictor,
+                    results["bulk"],
+                    config.model,
+                    config.material,
+                    config.compute,
+                    artifacts,
+                )
+            elif workflow == "coverage":
+                results[workflow] = run_coverage_study(
+                    predictor,
+                    results["bulk"],
+                    config.model,
+                    config.material,
+                    config.compute,
+                    artifacts,
+                )
+            elif workflow == "co_reaction":
+                results[workflow] = run_co_reaction_study(
+                    predictor,
+                    results["bulk"],
+                    config.model,
+                    config.material,
+                    config.compute,
+                    artifacts,
+                )
+            else:
+                raise RuntimeError(f"No handler was registered for {workflow!r}.")
+
+    summary_path = artifacts.write_json(
+        {
+            "requested_workflows": list(requested_workflows),
+            "executed_workflows": list(executed_workflows),
+            "model": config.model.model_name,
+            "random_seed": config.compute.random_seed,
+            "emissions": None if emissions_path is None else str(emissions_path),
+            "results": _serialize(results),
+        },
+        Path("run_summary.json"),
+    )
+    if config.run.show_figures:
+        _show_result_figures(results)
+    return ExperimentRun(
+        requested_workflows=requested_workflows,
+        executed_workflows=executed_workflows,
+        results=results,
+        summary_path=summary_path,
+        emissions_path=emissions_path,
     )
