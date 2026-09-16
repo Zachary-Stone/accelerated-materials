@@ -6,6 +6,7 @@ from uma_catalysis.structs import (
     AdsorptionResult,
     BulkOptimizationResult,
     EnergyComponents,
+    SurfaceEnergyStudyResult,
     ReactionResult,
     SurfaceEnergyResult,
 )
@@ -53,4 +54,22 @@ class ResultStructureTests(unittest.TestCase):
                 fit_intercept=1.0,
                 surface_energy_ev_per_angstrom_squared=0.1,
                 surface_energy_j_per_m2=1.6,
+            )
+
+    def test_surface_study_rejects_duplicate_facet_results(self) -> None:
+        """Keep one unambiguous fit result for every configured facet."""
+        facet_result = SurfaceEnergyResult(
+            facet=(1, 1, 1),
+            atom_counts=(4, 6),
+            slab_energies=(-10.0, -14.0),
+            fit_slope=-2.0,
+            fit_intercept=-2.0,
+            surface_energy_ev_per_angstrom_squared=-0.1,
+            surface_energy_j_per_m2=-1.6,
+        )
+
+        with self.assertRaises(ValueError):
+            SurfaceEnergyStudyResult(
+                bulk_energy_per_atom=-2.0,
+                facet_results=(facet_result, facet_result),
             )

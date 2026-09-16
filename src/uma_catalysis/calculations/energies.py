@@ -88,6 +88,50 @@ def surface_energy_from_intercept(
     )
 
 
+def linear_fit(
+    x_values: tuple[int, ...], y_values: tuple[float, ...]
+) -> tuple[float, float]:
+    """
+    Fit a straight line by ordinary least squares without global state.
+
+    Parameters
+    ----------
+    x_values : tuple[int, ...]
+        Independent-variable values.
+    y_values : tuple[float, ...]
+        Dependent-variable values corresponding to ``x_values``.
+
+    Returns
+    -------
+    tuple[float, float]
+        Fitted slope and intercept, respectively.
+
+    Raises
+    ------
+    ValueError
+        If fewer than two points are supplied, the lengths differ, any value is
+        non-finite, or all x values are identical.
+    """
+    if len(x_values) < 2:
+        raise ValueError("x_values must contain at least two points.")
+    if len(x_values) != len(y_values):
+        raise ValueError("x_values and y_values must have equal length.")
+
+    x_data = tuple(_finite(float(value), "x value") for value in x_values)
+    y_data = tuple(_finite(value, "y value") for value in y_values)
+    x_mean = sum(x_data) / len(x_data)
+    y_mean = sum(y_data) / len(y_data)
+    denominator = sum((value - x_mean) ** 2 for value in x_data)
+    if denominator == 0.0:
+        raise ValueError("x_values must not all be identical.")
+    numerator = sum(
+        (x_value - x_mean) * (y_value - y_mean)
+        for x_value, y_value in zip(x_data, y_data, strict=True)
+    )
+    slope = numerator / denominator
+    return slope, y_mean - slope * x_mean
+
+
 def adsorption_energy(
     adsorbed_energy: EnergyComponents,
     clean_slab_energy: EnergyComponents,

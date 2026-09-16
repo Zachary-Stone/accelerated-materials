@@ -17,6 +17,7 @@ from uma_catalysis.structs.results import (
     EnergyComponents,
     ReactionResult,
     SurfaceEnergyResult,
+    SurfaceEnergyStudyResult,
     WulffResult,
 )
 
@@ -33,6 +34,7 @@ __all__ = [
     "ReactionResult",
     "RunConfig",
     "SurfaceEnergyResult",
+    "SurfaceEnergyStudyResult",
     "TrackingConfig",
     "VALID_WORKFLOWS",
     "WulffResult",

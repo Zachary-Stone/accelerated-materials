@@ -1,0 +1,74 @@
+"""Generate figures for UMA catalysis workflow results."""
+
+from math import ceil
+from typing import Sequence
+
+from uma_catalysis.structs.results import SurfaceEnergyResult
+
+
+def plot_surface_energy_fits(
+    results: Sequence[SurfaceEnergyResult], element: str
+):
+    """
+    Plot relaxed slab energies and linear fits for each calculated facet.
+
+    Parameters
+    ----------
+    results : collections.abc.Sequence[SurfaceEnergyResult]
+        Surface-energy results to visualize.
+    element : str
+        Chemical-symbol label displayed in facet titles.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        Figure containing the calculated points and linear fit for each facet.
+
+    Raises
+    ------
+    ValueError
+        If no results or no element label is supplied.
+    """
+    if not results:
+        raise ValueError("results must not be empty.")
+    if not element.strip():
+        raise ValueError("element must not be empty.")
+
+    import matplotlib.pyplot as plt
+
+    column_count = min(2, len(results))
+    row_count = ceil(len(results) / column_count)
+    figure, axes = plt.subplots(
+        row_count,
+        column_count,
+        figsize=(6 * column_count, 5 * row_count),
+        squeeze=False,
+    )
+    flat_axes = axes.flatten()
+
+    for axis, result in zip(flat_axes, results):
+        atom_counts = result.atom_counts
+        slab_energies = result.slab_energies
+        axis.scatter(atom_counts, slab_energies, s=80, label="Calculated")
+        lower_bound = min(atom_counts) - 2
+        upper_bound = max(atom_counts) + 2
+        fit_x = [
+            lower_bound + (upper_bound - lower_bound) * index / 99
+            for index in range(100)
+        ]
+        fit_y = [result.fit_slope * value + result.fit_intercept for value in fit_x]
+        axis.plot(fit_x, fit_y, "--", linewidth=2, label="Linear fit")
+        facet = "".join(str(index) for index in result.facet)
+        axis.set_xlabel("Number of atoms")
+        axis.set_ylabel("Slab energy (eV)")
+        axis.set_title(
+            f"{element}({facet}): "
+            f"gamma = {result.surface_energy_j_per_m2:.2f} J/m²"
+        )
+        axis.legend()
+        axis.grid(True, alpha=0.3)
+
+    for axis in flat_axes[len(results) :]:
+        axis.remove()
+    figure.tight_layout()
+    return figure

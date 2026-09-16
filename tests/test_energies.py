@@ -6,6 +6,7 @@ from uma_catalysis.calculations.energies import (
     EV_PER_ANGSTROM_SQUARED_TO_J_PER_M2,
     adsorption_energy,
     apply_zero_point_correction,
+    linear_fit,
     reaction_energy,
     surface_energy_from_intercept,
 )
@@ -45,3 +46,10 @@ class EnergyCalculationTests(unittest.TestCase):
             surface_energy_from_intercept(1.0, 0.0)
         with self.assertRaises(ValueError):
             adsorption_energy(energy, energy, energy, 0.0)
+
+    def test_linear_fit_recovers_a_known_slab_energy_relation(self) -> None:
+        """Fit the slope and intercept used by the surface-energy workflow."""
+        slope, intercept = linear_fit((4, 6, 8), (-10.0, -14.0, -18.0))
+
+        self.assertEqual(slope, -2.0)
+        self.assertEqual(intercept, -2.0)

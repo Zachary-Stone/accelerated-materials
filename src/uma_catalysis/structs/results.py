@@ -1,8 +1,9 @@
 """Define typed scientific results produced by UMA catalysis workflows."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from math import isfinite
 from pathlib import Path
+from typing import Any
 
 from uma_catalysis.structs.config import Facet
 
@@ -72,6 +73,9 @@ class BulkOptimizationResult:
         Whether the optimizer reported convergence.
     structure_path : pathlib.Path or None, optional
         Saved relaxed bulk structure, if written. Default is None.
+    relaxed_atoms : Any or None, optional
+        In-memory ASE-compatible relaxed structure for downstream workflows.
+        Default is None. This field is excluded from value comparisons.
     """
 
     initial_lattice_constant: float
@@ -79,6 +83,7 @@ class BulkOptimizationResult:
     experimental_lattice_constant: float
     converged: bool
     structure_path: Path | None = None
+    relaxed_atoms: Any | None = field(default=None, repr=False, compare=False)
 
     def __post_init__(self) -> None:
         """Validate lattice constants."""
@@ -159,6 +164,35 @@ class SurfaceEnergyResult:
             *[("slab_energy", energy) for energy in self.slab_energies],
         ):
             _validate_finite(value, name)
+
+
+@dataclass(frozen=True, slots=True)
+class SurfaceEnergyStudyResult:
+    """
+    Store all facet results produced by one surface-energy workflow.
+
+    Parameters
+    ----------
+    bulk_energy_per_atom : float
+        Reference bulk energy in eV per atom.
+    facet_results : tuple[SurfaceEnergyResult, ...]
+        Surface-energy fit and energy result for each selected facet.
+    figure_path : pathlib.Path or None, optional
+        Saved linear-fit comparison figure, if written. Default is None.
+    """
+
+    bulk_energy_per_atom: float
+    facet_results: tuple[SurfaceEnergyResult, ...]
+    figure_path: Path | None = None
+
+    def __post_init__(self) -> None:
+        """Validate the common bulk reference and unique facet results."""
+        _validate_finite(self.bulk_energy_per_atom, "bulk_energy_per_atom")
+        if not self.facet_results:
+            raise ValueError("facet_results must not be empty.")
+        facets = tuple(result.facet for result in self.facet_results)
+        if len(set(facets)) != len(facets):
+            raise ValueError("facet_results must not contain duplicate facets.")
 
 
 @dataclass(frozen=True, slots=True)

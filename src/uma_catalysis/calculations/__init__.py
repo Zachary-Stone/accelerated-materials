@@ -11,6 +11,7 @@ from uma_catalysis.calculations.energies import (
     adsorption_energy,
     apply_zero_point_correction,
     evaluate_energy_components,
+    linear_fit,
     reaction_energy,
     surface_energy_from_intercept,
 )
@@ -46,6 +47,7 @@ __all__ = [
     "generate_multiple_adsorbate_candidates",
     "generate_single_adsorbate_candidates",
     "load_predictor",
+    "linear_fit",
     "reaction_energy",
     "relax_cell_and_positions",
     "relax_positions",
