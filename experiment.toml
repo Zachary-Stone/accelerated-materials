@@ -15,6 +15,7 @@ relaxation_force_threshold = 0.05
 relaxation_steps = 300
 adsorption_candidate_count = 5
 calculate_zpe = true
+run_neb = false
 neb_force_threshold = 0.1
 neb_steps = 300
 neb_intermediate_images = 10
