@@ -314,6 +314,53 @@ class AdsorptionResult:
 
 
 @dataclass(frozen=True, slots=True)
+class HydrogenAdsorptionResult:
+    """
+    Store all outputs from the tutorial's single-H adsorption workflow.
+
+    Parameters
+    ----------
+    adsorption : AdsorptionResult
+        Best H adsorption result including its optional ZPE correction.
+    candidate_energies : tuple[EnergyComponents, ...]
+        Relaxed total-energy components for every generated H configuration.
+    best_candidate_number : int
+        One-based index of the lowest-energy generated H configuration.
+    clean_slab_path : pathlib.Path
+        Saved relaxed clean-slab structure.
+    hydrogen_reference_path : pathlib.Path
+        Saved relaxed H2 reference structure.
+    visualization_path : pathlib.Path
+        Saved figure of the selected H adsorption structure.
+    adsorbate_zpe : float or None, optional
+        Positive-mode ZPE of adsorbed H in eV. Default is None.
+    reference_zpe : float or None, optional
+        Positive-mode ZPE of H2 in eV. Default is None.
+    """
+
+    adsorption: AdsorptionResult
+    candidate_energies: tuple[EnergyComponents, ...]
+    best_candidate_number: int
+    clean_slab_path: Path
+    hydrogen_reference_path: Path
+    visualization_path: Path
+    adsorbate_zpe: float | None = None
+    reference_zpe: float | None = None
+
+    def __post_init__(self) -> None:
+        """Validate candidate-selection and optional ZPE data."""
+        if not self.candidate_energies:
+            raise ValueError("candidate_energies must not be empty.")
+        if not 1 <= self.best_candidate_number <= len(self.candidate_energies):
+            raise ValueError("best_candidate_number must select a candidate energy.")
+        if (self.adsorbate_zpe is None) != (self.reference_zpe is None):
+            raise ValueError("adsorbate_zpe and reference_zpe must be set together.")
+        if self.adsorbate_zpe is not None:
+            _validate_finite(self.adsorbate_zpe, "adsorbate_zpe")
+            _validate_finite(self.reference_zpe, "reference_zpe")
+
+
+@dataclass(frozen=True, slots=True)
 class CoveragePoint:
     """
     Store one coverage and its average adsorption energy.

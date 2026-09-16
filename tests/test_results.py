@@ -1,11 +1,13 @@
 """Unit tests for UMA catalysis result structures."""
 
 import unittest
+from pathlib import Path
 
 from uma_catalysis.structs import (
     AdsorptionResult,
     BulkOptimizationResult,
     EnergyComponents,
+    HydrogenAdsorptionResult,
     ReactionResult,
     SurfaceEnergyResult,
     SurfaceEnergyStudyResult,
@@ -72,4 +74,24 @@ class ResultStructureTests(unittest.TestCase):
             SurfaceEnergyStudyResult(
                 bulk_energy_per_atom=-2.0,
                 facet_results=(facet_result, facet_result),
+            )
+
+    def test_hydrogen_adsorption_requires_a_valid_selected_candidate(self) -> None:
+        """Reject an H adsorption result that selects outside its candidate list."""
+        adsorption = AdsorptionResult(
+            adsorbate="H*",
+            adsorbed_energy=EnergyComponents(-10.0),
+            clean_slab_energy=EnergyComponents(-8.0),
+            reference_energy=EnergyComponents(-2.0),
+            reference_multiplier=0.5,
+        )
+
+        with self.assertRaises(ValueError):
+            HydrogenAdsorptionResult(
+                adsorption=adsorption,
+                candidate_energies=(EnergyComponents(-10.0),),
+                best_candidate_number=2,
+                clean_slab_path=Path("clean.xyz"),
+                hydrogen_reference_path=Path("h2.xyz"),
+                visualization_path=Path("h.png"),
             )

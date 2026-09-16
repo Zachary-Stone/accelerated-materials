@@ -38,6 +38,41 @@ def plot_wulff_shape(wulff_shape: Any, element: str) -> Any:
     return figure
 
 
+def plot_adsorption_structure(atoms: Any, title: str) -> Any:
+    """
+    Plot an ASE structure using the tutorial's isometric viewing orientation.
+
+    Parameters
+    ----------
+    atoms : Any
+        ASE-compatible structure to visualize.
+    title : str
+        Figure title describing the optimized adsorption configuration.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        Structure figure ready to save or display.
+
+    Raises
+    ------
+    ValueError
+        If the title is empty.
+    """
+    if not title.strip():
+        raise ValueError("title must not be empty.")
+
+    import matplotlib.pyplot as plt
+    from ase.visualize.plot import plot_atoms
+
+    figure, axis = plt.subplots(figsize=(7, 6))
+    plot_atoms(atoms, axis, rotation="-45x,0y,0z")
+    axis.set_title(title)
+    axis.set_axis_off()
+    figure.tight_layout()
+    return figure
+
+
 def plot_surface_energy_fits(
     results: Sequence[SurfaceEnergyResult], element: str
 ) -> Any:
