@@ -107,11 +107,14 @@ def run_surface_energy_study(
             atom_counts.append(len(outcome.atoms))
             slab_energies.append(float(outcome.atoms.get_potential_energy()))
             cell = outcome.atoms.get_cell()
-            surface_area = float(
-                (cell[0][1] * cell[1][2] - cell[0][2] * cell[1][1]) ** 2
-                + (cell[0][2] * cell[1][0] - cell[0][0] * cell[1][2]) ** 2
-                + (cell[0][0] * cell[1][1] - cell[0][1] * cell[1][0]) ** 2
-            ) ** 0.5
+            surface_area = (
+                float(
+                    (cell[0][1] * cell[1][2] - cell[0][2] * cell[1][1]) ** 2
+                    + (cell[0][2] * cell[1][0] - cell[0][0] * cell[1][2]) ** 2
+                    + (cell[0][0] * cell[1][1] - cell[0][1] * cell[1][0]) ** 2
+                )
+                ** 0.5
+            )
             artifacts.write_json(
                 {
                     "facet": list(facet),

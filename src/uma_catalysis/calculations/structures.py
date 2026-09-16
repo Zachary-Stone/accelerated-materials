@@ -1,7 +1,8 @@
 """Construct bulk, slab, gas, and adsorbate-candidate structures."""
 
+from collections.abc import Sequence
 from math import sqrt
-from typing import Any, Sequence
+from typing import Any
 
 from uma_catalysis.structs.config import Facet, MaterialConfig
 
@@ -95,8 +96,8 @@ def build_surface_energy_slab(
 
     adaptor = AseAtomsAdaptor()
     structure = adaptor.get_structure(bulk_atoms)
-    minimum_slab_size = layer_count * lattice_constant / sqrt(
-        sum(index**2 for index in facet)
+    minimum_slab_size = (
+        layer_count * lattice_constant / sqrt(sum(index**2 for index in facet))
     )
     slab_generator = SlabGenerator(
         structure,

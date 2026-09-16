@@ -1,14 +1,46 @@
 """Generate figures for UMA catalysis workflow results."""
 
+from collections.abc import Sequence
 from math import ceil
-from typing import Sequence
+from typing import Any
 
 from uma_catalysis.structs.results import SurfaceEnergyResult
 
 
+def plot_wulff_shape(wulff_shape: Any, element: str) -> Any:
+    """
+    Plot a Pymatgen Wulff shape and return its Matplotlib figure.
+
+    Parameters
+    ----------
+    wulff_shape : object
+        Pymatgen ``WulffShape`` object exposing ``get_plot``.
+    element : str
+        Chemical-symbol label displayed in the figure title.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        Wulff morphology figure ready to save or display.
+
+    Raises
+    ------
+    ValueError
+        If the element label is empty.
+    """
+    if not element.strip():
+        raise ValueError("element must not be empty.")
+
+    axis = wulff_shape.get_plot()
+    axis.set_title(f"Wulff Construction: {element} Nanoparticle")
+    figure = axis.get_figure()
+    figure.tight_layout()
+    return figure
+
+
 def plot_surface_energy_fits(
     results: Sequence[SurfaceEnergyResult], element: str
-):
+) -> Any:
     """
     Plot relaxed slab energies and linear fits for each calculated facet.
 
@@ -62,8 +94,7 @@ def plot_surface_energy_fits(
         axis.set_xlabel("Number of atoms")
         axis.set_ylabel("Slab energy (eV)")
         axis.set_title(
-            f"{element}({facet}): "
-            f"gamma = {result.surface_energy_j_per_m2:.2f} J/m²"
+            f"{element}({facet}): gamma = {result.surface_energy_j_per_m2:.2f} J/m²"
         )
         axis.legend()
         axis.grid(True, alpha=0.3)

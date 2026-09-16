@@ -1,8 +1,9 @@
 """Relax ASE structures and calculate optional vibrational ZPE corrections."""
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
 
 
 @dataclass(slots=True)

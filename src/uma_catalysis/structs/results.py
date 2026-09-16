@@ -212,6 +212,8 @@ class WulffResult:
         Area-weighted surface energy in J/m-squared.
     facet_area_fractions : tuple[tuple[Facet, float], ...]
         Per-facet area fractions as immutable facet/fraction pairs.
+    figure_path : pathlib.Path or None, optional
+        Saved Wulff-construction figure, if written. Default is None.
     """
 
     volume: float
@@ -219,6 +221,7 @@ class WulffResult:
     effective_radius: float
     weighted_surface_energy: float
     facet_area_fractions: tuple[tuple[Facet, float], ...]
+    figure_path: Path | None = None
 
     def __post_init__(self) -> None:
         """Validate morphology metrics and fractional areas."""

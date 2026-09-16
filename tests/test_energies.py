@@ -21,9 +21,7 @@ class EnergyCalculationTests(unittest.TestCase):
         energy_ev, energy_si = surface_energy_from_intercept(4.0, 20.0)
 
         self.assertEqual(energy_ev, 0.1)
-        self.assertAlmostEqual(
-            energy_si, 0.1 * EV_PER_ANGSTROM_SQUARED_TO_J_PER_M2
-        )
+        self.assertAlmostEqual(energy_si, 0.1 * EV_PER_ANGSTROM_SQUARED_TO_J_PER_M2)
 
     def test_adsorption_and_reaction_energies_preserve_notebook_signs(self) -> None:
         """Use final-minus-initial and slab-plus-adsorbate conventions."""

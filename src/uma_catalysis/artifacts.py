@@ -1,9 +1,10 @@
 """Create and write workflow artifacts beneath one controlled output root."""
 
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 
 @dataclass(frozen=True, slots=True)
@@ -95,9 +96,7 @@ class ArtifactStore:
         write(str(destination), atoms, **kwargs)
         return destination
 
-    def write_figure(
-        self, figure: Any, relative_path: Path, dpi: int = 200
-    ) -> Path:
+    def write_figure(self, figure: Any, relative_path: Path, dpi: int = 200) -> Path:
         """
         Write a Matplotlib-compatible figure without displaying it.
 

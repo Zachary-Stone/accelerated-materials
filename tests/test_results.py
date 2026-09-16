@@ -6,9 +6,9 @@ from uma_catalysis.structs import (
     AdsorptionResult,
     BulkOptimizationResult,
     EnergyComponents,
-    SurfaceEnergyStudyResult,
     ReactionResult,
     SurfaceEnergyResult,
+    SurfaceEnergyStudyResult,
 )
 
 
